@@ -42,3 +42,28 @@ def test_coordinator():
 def test_cli():
     assert main(["audit", "--task-id", "CLI-01"]) == 0
     assert main(["chat", "What", "is", "the", "system", "status?"]) == 0
+
+
+def test_batch_missing_file_returns_error():
+    """Batch command with missing input file should return exit code 1."""
+    assert main(["batch", "-i", "nonexistent_file_xyz.csv"]) == 1
+
+
+def test_coordinator_all_status_levels():
+    """Coordinator should correctly classify all execution status levels."""
+    coord = RingSignatureCoordinator()
+
+    # NOMINAL: all parameters within bounds
+    p_nominal = FrontierPayload("T-NOM", "KEY-N", primary_metric=10.0, secondary_metric=5.0, status_descriptor="NOMINAL")
+    d = coord.process(p_nominal)
+    assert d["overall_status"] == ExecutionStatus.NOMINAL.value
+
+    # ELEVATED_RISK: primary metric exceeds bound
+    p_elevated = FrontierPayload("T-ELV", "KEY-E", primary_metric=30.0, secondary_metric=5.0, status_descriptor="NOMINAL")
+    d = coord.process(p_elevated)
+    assert d["overall_status"] == ExecutionStatus.ELEVATED_RISK.value
+
+    # CRITICAL_INTERVENTION: is_critical_flag set
+    p_critical = FrontierPayload("T-CRT", "KEY-C", primary_metric=10.0, secondary_metric=5.0, status_descriptor="NOMINAL", is_critical_flag=True)
+    d = coord.process(p_critical)
+    assert d["overall_status"] == ExecutionStatus.CRITICAL_INTERVENTION.value

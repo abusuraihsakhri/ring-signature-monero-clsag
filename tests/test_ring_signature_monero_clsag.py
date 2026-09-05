@@ -63,3 +63,88 @@ def test_supervisor_consensus_and_audit():
     assert main(["audit", "--task-id", "CLI-TEST-01"]) == 0
     assert main(["chat", "Explain", "specifications"]) == 0
     assert main(["verify-audit"]) == 0
+
+
+# --- New validation and edge-case tests ---
+
+def test_metric_nan_rejected():
+    """NaN metric values must be rejected by validation."""
+    with pytest.raises(ValueError, match="finite"):
+        SystemTaskPayload(task_id="T-NAN", target_identifier="KEY-NAN", primary_metric=float("nan"))
+
+
+def test_metric_inf_rejected():
+    """Infinite metric values must be rejected by validation."""
+    with pytest.raises(ValueError, match="finite"):
+        SystemTaskPayload(task_id="T-INF", target_identifier="KEY-INF", secondary_metric=float("inf"))
+
+
+def test_empty_task_id_rejected():
+    """Empty task_id must be rejected."""
+    with pytest.raises(ValueError, match="non-empty"):
+        SystemTaskPayload(task_id="   ", target_identifier="KEY-01", primary_metric=10.0)
+
+
+def test_empty_target_identifier_rejected():
+    """Empty target_identifier must be rejected."""
+    with pytest.raises(ValueError, match="non-empty"):
+        SystemTaskPayload(task_id="T1", target_identifier="", primary_metric=10.0)
+
+
+def test_batch_missing_file_returns_error():
+    """Batch command with missing input file should return exit code 1."""
+    assert main(["batch", "-i", "nonexistent_file_xyz.csv"]) == 1
+
+
+def test_phi_redaction():
+    """PHIGuard.redact_phi should replace PII with placeholder."""
+    redacted = PHIGuard.redact_phi("Contact patient at 555-123-4567 or test@example.com")
+    assert "555-123-4567" not in redacted
+    assert "test@example.com" not in redacted
+    assert "[REDACTED_IDENTIFIER]" in redacted
+
+
+def test_audit_trail_integrity_tamper_detection():
+    """Audit trail should detect tampering with previous hash."""
+    from agents.base import AuditTrail
+    trail = AuditTrail(secret_key="test-key-for-integrity")
+    trail.log("test", "tier", "EVENT_A", {"data": 1})
+    trail.log("test", "tier", "EVENT_B", {"data": 2})
+    assert trail.verify_integrity() is True
+
+    # Tamper with the first entry's current_hash
+    if trail.logs:
+        trail.logs[0]["current_hash"] = "TAMPERED_HASH"
+    assert trail.verify_integrity() is False
+
+
+def test_supervisor_all_urgency_levels():
+    """Supervisor should correctly classify all urgency levels."""
+    supervisor = SystemSupervisor(model_provider="mock")
+
+    # ROUTINE: all metrics nominal
+    p_routine = SystemTaskPayload(
+        task_id="T-ROUTINE", target_identifier="KEY-R",
+        primary_metric=10.0, secondary_metric=5.0,
+        status_descriptor="NOMINAL", is_critical_flag=False
+    )
+    d = supervisor.process_task(p_routine)
+    assert d.overall_urgency == UrgencyLevel.ROUTINE
+
+    # ELEVATED: primary metric exceeds threshold
+    p_elevated = SystemTaskPayload(
+        task_id="T-ELEV", target_identifier="KEY-E",
+        primary_metric=30.0, secondary_metric=5.0,
+        status_descriptor="NOMINAL", is_critical_flag=False
+    )
+    d = supervisor.process_task(p_elevated)
+    assert d.overall_urgency == UrgencyLevel.ELEVATED
+
+    # CRITICAL: is_critical_flag set
+    p_critical = SystemTaskPayload(
+        task_id="T-CRIT", target_identifier="KEY-C",
+        primary_metric=10.0, secondary_metric=5.0,
+        status_descriptor="NOMINAL", is_critical_flag=True
+    )
+    d = supervisor.process_task(p_critical)
+    assert d.overall_urgency == UrgencyLevel.CRITICAL_STAT

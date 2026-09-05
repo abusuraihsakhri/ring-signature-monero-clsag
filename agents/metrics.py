@@ -1,7 +1,6 @@
 """
 Prometheus Operational Metrics Exporter for ring-signature-monero-clsag.
 """
-import time
 from typing import Dict, Any
 
 class SystemMetricsCollector:
