@@ -5,6 +5,7 @@ import argparse
 import csv
 import json
 import sys
+from pathlib import Path
 from agents.models import SystemTaskPayload
 from agents.supervisor import SystemSupervisor
 from agents.base import AuditLogger
@@ -80,6 +81,9 @@ def main(argv=None):
         return 0
 
     if args.command == "batch":
+        if Path(args.input).resolve() == Path(args.output).resolve():
+            print("Error: Input and output CSV paths must be different.")
+            return 1
         try:
             with open(args.input, mode="r", encoding="utf-8-sig") as f:
                 reader = csv.DictReader(f)
@@ -92,7 +96,7 @@ def main(argv=None):
             print(f"Error reading input file: {e}")
             return 1
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]))
         out_rows = []
         errors = 0
         for idx, r in enumerate(rows):
