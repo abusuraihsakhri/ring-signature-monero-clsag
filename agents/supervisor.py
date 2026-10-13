@@ -78,5 +78,5 @@ class SystemSupervisor:
 
     def query_supervisory_chat(self, query: str) -> str:
         PHIGuard.assert_no_phi(query)
-        prompt = f"Supervisor inquiry for Ring Signature Monero Clsag under NIST FIPS 203/204/205 / ISO/IEC 17825 Standards: {query}"
+        prompt = f"Rule-based demonstration supervisor inquiry (not cryptographic validation): {query}"
         return self.llm.invoke(prompt)
