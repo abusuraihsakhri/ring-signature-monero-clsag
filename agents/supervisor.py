@@ -25,6 +25,9 @@ class SystemSupervisor:
         PHIGuard.assert_no_phi(payload.task_id)
         PHIGuard.assert_no_phi(payload.target_identifier)
         PHIGuard.assert_no_phi(payload.status_descriptor)
+        # Validate all user-supplied metadata, not only top-level identifiers.
+        import json
+        PHIGuard.assert_no_phi(json.dumps(payload.attributes, default=str))
 
         # Multi-worker evaluations
         all_alerts: List[AgentAlert] = []
@@ -75,5 +78,5 @@ class SystemSupervisor:
 
     def query_supervisory_chat(self, query: str) -> str:
         PHIGuard.assert_no_phi(query)
-        prompt = f"Supervisor inquiry for Ring Signature Monero Clsag under NIST FIPS 203/204/205 / ISO/IEC 17825 Standards: {query}"
+        prompt = f"Rule-based demonstration supervisor inquiry (not cryptographic validation): {query}"
         return self.llm.invoke(prompt)

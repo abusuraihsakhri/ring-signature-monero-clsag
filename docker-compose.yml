@@ -1,13 +1,12 @@
-version: '3.8'
-
 services:
   ring-signature-monero-clsag:
     build: .
     container_name: ring-signature-monero-clsag
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      - AUDIT_SECRET_KEY=${AUDIT_SECRET_KEY:-change-me-in-production}
+      - AUDIT_SECRET_KEY=${AUDIT_SECRET_KEY:?Set AUDIT_SECRET_KEY before starting the service}
+      - AUDIT_LOGS_API_KEY=${AUDIT_LOGS_API_KEY:-}
       - MODEL_PROVIDER=mock
     restart: unless-stopped
     healthcheck:
