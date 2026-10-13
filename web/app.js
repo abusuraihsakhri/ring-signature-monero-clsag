@@ -72,6 +72,11 @@
     };
   }
 
+  function isLocalBackend() {
+    return (location.protocol === "http:" || location.protocol === "https:") &&
+      ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+  }
+
   async function runAudit() {
     const terminal = el("outputConsole");
     const button = el("run-audit");
@@ -81,8 +86,7 @@
     el("export-json").disabled = true;
     try {
       const payload = readPayload();
-      const browserDemo = location.protocol === "file:" ||
-        location.hostname.endsWith(".github.io");
+      const browserDemo = !isLocalBackend();
       let result;
       if (browserDemo) {
         result = evaluateLocally(payload);
@@ -135,7 +139,7 @@
 
   el("run-audit").addEventListener("click", runAudit);
   el("export-json").addEventListener("click", exportJson);
-  const demo = location.protocol === "file:" || location.hostname.endsWith(".github.io");
+  const demo = !isLocalBackend();
   el("mode-badge").textContent = demo ? "Local demonstration" : "Backend API";
   el("outputConsole").textContent = demo ?
     "Local threshold demonstration ready. Inputs are processed in this browser; no CLSAG cryptography is performed." :
