@@ -4,7 +4,9 @@ FastAPI REST API Server for Ring Signature Monero Clsag.
 from typing import Dict, Any, List, Optional
 import hmac
 import os
+from pathlib import Path
 from fastapi import FastAPI, HTTPException, Header
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
@@ -62,3 +64,9 @@ def api_audit_logs(x_audit_api_key: Optional[str] = Header(default=None)):
     if not expected_key or not x_audit_api_key or not hmac.compare_digest(x_audit_api_key, expected_key):
         raise HTTPException(status_code=403, detail="Audit log access is disabled or unauthorized")
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}
+
+# Serve the local console without changing the existing API routes.
+# The static site also runs independently on GitHub Pages.
+_web_directory = Path(__file__).resolve().parent.parent / "web"
+if _web_directory.is_dir():
+    app.mount("/", StaticFiles(directory=str(_web_directory), html=True), name="console")
