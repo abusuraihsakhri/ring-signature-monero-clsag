@@ -32,6 +32,7 @@ jobs:
         python -m compileall -q agents ring_clsag_sign cli.py
         python -m build
         node --check web/app.js
+        node tests/test_web_demo.cjs
 
     - name: Run Pytest Suite
       run: |
