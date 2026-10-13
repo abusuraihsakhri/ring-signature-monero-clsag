@@ -53,7 +53,7 @@ def main(argv=None):
         dossier = coordinator.process(payload)
         print("=" * 80)
         print(f"  CLSAG COMPACT LINKABLE RING SIGNATURE & TRANSACTION ANONYMIZER AGENT")
-        print(f"  Domain: Post-Quantum Cryptography & Zero-Knowledge | Standard: Monero CLSAG Protocol Specification")
+        print(f"  Threshold-rule demonstration | No CLSAG signing or verification")
         print(f"  Task: {dossier['task_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
