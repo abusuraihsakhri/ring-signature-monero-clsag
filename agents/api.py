@@ -16,7 +16,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Ring Signature Monero Clsag API",
-    description="Enterprise Distributed Component Platform (Post-Quantum Cryptography & Hardware Security)",
+    description="Rule-based evaluation demonstration; not a CLSAG cryptographic implementation",
     version="3.0.0-ENTERPRISE",
 )
 
@@ -27,7 +27,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "ring-signature-monero-clsag", "domain": "Post-Quantum Cryptography & Hardware Security", "standard": "NIST FIPS 203/204/205 / ISO/IEC 17825 Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "ring-signature-monero-clsag", "domain": "Threshold-rule demonstration", "standard": "Demonstration rules only", "version": "3.0.0-ENTERPRISE"}
 
 
 @app.get("/metrics")
@@ -35,7 +35,7 @@ def metrics():
     return {
         "dossiers_processed_total": len(supervisor.dossier_registry),
         "audit_blocks_total": len(AuditLogger.get_trail()),
-        "system_status": "NOMINAL_OPTIMAL"
+        "system_status": "RUNNING"
     }
 
 
