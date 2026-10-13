@@ -85,7 +85,7 @@ class RingSignatureCoordinator:
 
         dossier = {
             "system": "ring-signature-monero-clsag",
-            "domain": "Post-Quantum Cryptography & Zero-Knowledge",
+            "domain": "Threshold-rule demonstration",
             "task_id": payload.task_id,
             "target_identifier": payload.target_identifier,
             "overall_status": status.value,
@@ -93,7 +93,7 @@ class RingSignatureCoordinator:
             "critical_count": crit_count,
             "warning_count": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "standard_specification": "Monero CLSAG Protocol Specification",
+            "standard_specification": "CLSAG referenced for context only; no protocol verification",
             "consensus_summary": f"Consensus evaluation completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -105,6 +105,6 @@ class RingSignatureCoordinator:
         if "status" in q or "ledger" in q:
             return f"CLSAG Compact Linkable Ring Signature & Transaction Anonymizer Agent currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
         elif "standard" in q or "spec" in q:
-            return "Active runtime operating strictly according to Monero CLSAG Protocol Specification specifications."
+            return "Monero CLSAG Protocol Specification is referenced for context only. This demonstration performs no CLSAG signing or verification."
         else:
-            return f"CLSAG Compact Linkable Ring Signature & Transaction Anonymizer Agent executive coordinator online. Zero-telemetry on-premises surveillance active."
+            return "Threshold-rule demonstration coordinator ready; no CLSAG cryptography is performed."
