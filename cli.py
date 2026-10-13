@@ -57,7 +57,7 @@ def main(argv=None):
         dossier = supervisor.process_task(payload)
         print("=" * 80)
         print(f"  RING SIGNATURE MONERO CLSAG")
-        print(f"  Domain: Post-Quantum Cryptography & Hardware Security | Standard: NIST FIPS 203/204/205 / ISO/IEC 17825 Standards")
+        print(f"  Rule-based demonstration only | No CLSAG or standards verification")
         print(f"  Dossier ID: {dossier.dossier_id} | Urgency: [{dossier.overall_urgency.value}]")
         print("=" * 80)
         for a in dossier.alerts:
