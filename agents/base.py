@@ -94,14 +94,30 @@ class AuditTrail:
         return entry
 
     def verify_integrity(self) -> bool:
-        for i, entry in enumerate(self.logs):
-            prev = self.logs[i-1]["current_hash"] if i > 0 else "GENESIS_BLOCK_0000000000000000"
-            if entry["prev_hash"] != prev:
+        """Verify both chain continuity and every entry's HMAC."""
+        previous_hash = "GENESIS_BLOCK_0000000000000000"
+        for entry in self.logs:
+            try:
+                if not hmac.compare_digest(entry["prev_hash"], previous_hash):
+                    return False
+                signed_message = (
+                    f"{entry['audit_id']}|{entry['timestamp']}|{entry['actor']}|"
+                    f"{entry['actor_tier']}|{entry['event_type']}|"
+                    f"{entry['payload_hash']}|{entry['prev_hash']}"
+                )
+                expected = hmac.new(
+                    self.secret_key, signed_message.encode("utf-8"), hashlib.sha256
+                ).hexdigest()
+                if not hmac.compare_digest(entry["current_hash"], expected):
+                    return False
+                previous_hash = entry["current_hash"]
+            except (KeyError, TypeError, ValueError):
                 return False
         return True
 
     def get_trail(self) -> List[Dict[str, Any]]:
-        return self.logs
+        """Return a snapshot rather than exposing mutable internal entries."""
+        return [entry.copy() for entry in self.logs]
 
 
 GLOBAL_AUDIT = AuditTrail()
