@@ -1,10 +1,12 @@
 """
 FastAPI REST API Server for Ring Signature Monero Clsag.
 """
-from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from typing import Dict, Any, List, Optional
+import hmac
+import os
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
-from .base import AuditLogger, PHIGuard
+from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -37,7 +39,10 @@ def metrics():
 
 @app.post("/api/audit")
 def api_audit(payload: SystemTaskPayload):
-    dossier = supervisor.process_task(payload)
+    try:
+        dossier = supervisor.process_task(payload)
+    except SecurityException:
+        raise HTTPException(status_code=422, detail="Sensitive identifiers are not permitted")
     return dossier.to_dict()
 
 
@@ -51,5 +56,9 @@ def api_chat(req: ChatRequest):
 
 
 @app.get("/api/audit/logs")
-def api_audit_logs():
+def api_audit_logs(x_audit_api_key: Optional[str] = Header(default=None)):
+    """Audit metadata may identify requests; require explicit API access."""
+    expected_key = os.getenv("AUDIT_LOGS_API_KEY")
+    if not expected_key or not x_audit_api_key or not hmac.compare_digest(x_audit_api_key, expected_key):
+        raise HTTPException(status_code=403, detail="Audit log access is disabled or unauthorized")
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}
