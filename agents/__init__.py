@@ -1,7 +1,7 @@
 """
-Ring Signature Monero Clsag — Enterprise Automated Analytical Suite.
-Domain: Post-Quantum Cryptography & Hardware Security
-Standard: NIST FIPS 203/204/205 / ISO/IEC 17825 Standards
+Ring Signature Monero CLSAG — rule-based demonstration package.
+Domain: Generic threshold classification
+Standards conformance: Not assessed
 
 """
 __version__ = "3.0.0-ENTERPRISE"
